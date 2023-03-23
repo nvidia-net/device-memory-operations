@@ -24,5 +24,5 @@ make
 
 # Run (you need to build with unit-tests)
 ```
-./post_wod_wqe_test -i 10 -r 5 -s 50 -d mlx5_3
+./device_memory_functions_test -i 10 -r 5 -s 50 -d mlx5_3
 ```
