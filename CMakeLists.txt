@@ -1,4 +1,4 @@
-project(post_wod_wqe)
+project(device_memory_functions)
 cmake_minimum_required(VERSION 2.8)
 
 option(BUILD_TEST "Build the tests directory" ON)
