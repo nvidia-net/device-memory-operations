@@ -101,7 +101,12 @@ int main(int argc, char *argv[])
         perror("ibv_alloc_pd failed");
         
     }
-    dm_init_value = be64toh(dm_init_value);
+    // Since we are going to icrement the buffer using MEMIC atomics and since the PXTH
+    // while doing the read operation during the read-modify-write (to implement the atomicity)
+    // assumes the data it reads is in Big Endian we set the inital value also in Big Endian.
+    // This assumption of the PXTH (that it reads MEMIC in Big Endian in the MEMIC atomic interface) is a HW Bug
+    // this BUG will be fixed in CX-8. 
+    dm_init_value = htobe64(dm_init_value);
     if (alloc_dm(   ctx, 
                     &dm,
                     sizeof(unsigned long), 
@@ -121,7 +126,9 @@ int main(int argc, char *argv[])
 
     for (i = 0; i < dm_increment_rounds; i++)
     {
-        (*(unsigned long *)memic_atomic_incr_addr) = be64toh(dm_increment_step);
+        // In CX-7 PXTH assumes the atomic operand it gets from the host is in Big Endian
+        // This is a HW BUG and will be fixed in CX-8
+        (*(unsigned long *)memic_atomic_incr_addr) = htobe64(dm_increment_step);
         printf("DM_value += %ld ==> ", dm_increment_step);
         usleep(1000 * 500);
         if (ibv_memcpy_from_dm(&curr_value, dm, 0 /*offset*/, sizeof(unsigned long)) != 0)
