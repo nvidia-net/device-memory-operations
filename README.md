@@ -6,9 +6,9 @@ As a sanity check, the repo provides a test that calls the library and prints on
 
 # Known issues
 > Issue #1:
-> Since we are going to icrement the buffer using MEMIC atomics and since the PXTH
-> while doing the read operation during the read-modify-write (to implement the atomicity)
-> assumes the data it reads is in Big Endian we set the inital value also in Big Endian.
+> Since we are going to icrement the buffer using MEMIC atomics, and since the PXTH,
+> while doing the read operation (during the read-modify-write to implement the atomicity)
+> assumes that the data it reads is in Big Endian we set the inital value also in Big Endian.
 > This assumption of the PXTH (that it reads MEMIC in Big Endian in the MEMIC atomic interface) is a HW Bug
 > this BUG will be fixed in CX-8. 
 
