@@ -101,12 +101,14 @@ int main(int argc, char *argv[])
         perror("ibv_alloc_pd failed");
         
     }
+    printf("Writing in host endianness (%d) (variable length %d)\n", dm_init_value, sizeof(dm_init_value));
+
     // Since we are going to icrement the buffer using MEMIC atomics and since the PXTH
     // while doing the read operation during the read-modify-write (to implement the atomicity)
     // assumes the data it reads is in Big Endian we set the inital value also in Big Endian.
     // This assumption of the PXTH (that it reads MEMIC in Big Endian in the MEMIC atomic interface) is a HW Bug
     // this BUG will be fixed in CX-8. 
-    dm_init_value = htobe64(dm_init_value);
+    //dm_init_value = htobe64(dm_init_value); // This is the workaround for CX-7. In CX-8 this line should be removed
     if (alloc_dm(   ctx, 
                     &dm,
                     sizeof(unsigned long), 
@@ -122,20 +124,26 @@ int main(int argc, char *argv[])
     {
         perror("ibv_memcpy_from_dm failed");
     }
-    printf("DM initial value: %ld\n", be64toh(curr_value));
+    //printf("DM initial value (with    be64toh): %ld\n", be64toh(curr_value));
+    //printf("DM initial value (without be64toh): %ld\n", curr_value);
 
     for (i = 0; i < dm_increment_rounds; i++)
     {
         // In CX-7 PXTH assumes the atomic operand it gets from the host is in Big Endian
         // This is a HW BUG and will be fixed in CX-8
-        (*(unsigned long *)memic_atomic_incr_addr) = htobe64(dm_increment_step);
+        //(*(unsigned long *)memic_atomic_incr_addr) = htobe64(dm_increment_step); // This is the workaround for CX-7. In CX-8 this line should be removed
+        (*(unsigned long *)memic_atomic_incr_addr) = dm_increment_step; // This is the correct SW usage of MEMIC Atomics
+
         printf("DM_value += %ld ==> ", dm_increment_step);
         usleep(1000 * 500);
         if (ibv_memcpy_from_dm(&curr_value, dm, 0 /*offset*/, sizeof(unsigned long)) != 0)
         {
             perror("ibv_memcpy_from_dm failed");
         }
-        printf("DM_value == %ld\n", be64toh(curr_value));
+        // printf("DM_value == %ld (with be64toh)\n", be64toh(curr_value));
+        // printf("DM_value += %ld ==> ", dm_increment_step);
+        printf("DM_value == %ld (without be64toh)\n", curr_value);
+
     }
 
     // Close connection

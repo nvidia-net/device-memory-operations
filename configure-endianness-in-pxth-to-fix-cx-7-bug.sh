@@ -1,0 +1,8 @@
+#!/bin/bash
+
+dev=$1
+dev=mlx5_4
+
+mcra $dev 0x5830b4.2:1 0x0
+mcra $dev 0x5830b4.3:1 0x0
+mcra $dev 0x5830b4.4:1 0x0
