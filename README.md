@@ -93,5 +93,5 @@ make
 The following command is running the unit test built [here](#build-with-test):
 
 ```sh
-./device_memory_functions_test -i 10 -r 5 -s 50 -d mlx5_3
+./device_memory_functions_test -i 100 -r 5 -s 50 -d mlx5_3
 ```
